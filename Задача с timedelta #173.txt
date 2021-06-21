@@ -1,0 +1,135 @@
+Задача с timedelta #173
+В этом уроке нужно написать программу, которая выводит информацию о том, сколько осталось времени до часа «Икс».
+
+В переменную date_x должен быть записан объект даты/времени. Дата и время должны быть получены от пользователя в формате ДД.ММ.ГГГГ ЧЧ:ММ. Если пользователь вводит строку, несоответствующую формату, программа должна выводить на экран надпись «Ошибка».
+
+Если введенные дата/время меньше текущей, программа должна вывести надпись «Ошибка».
+
+Если дата/время соответствуют формату и date_x больше текущей даты/времени, программа должна вывести строку с сообщением о том, сколько времени осталось до часа «Икс».
+
+Если осталось меньше часа, то программа должна вывести количество оставшихся минут до часа «Икс»:
+
+До часа "Икс" 34 минуты
+Программа должна подбирать правильную форму для существительного «минута». Для этого можете смело взять свою функцию choose_plural из этой задачи.
+
+Если осталось больше часа, но меньше дня, строка будет такой:
+
+До часа "Икс" 1 час и 13 минут
+Слова «час» и «минута» должны быть правильной формы. Если количество оставшихся минут равно 0, то про минуты писать ничего не нужно и достаточно написать просто:
+
+До часа "Икс" 2 часа
+Если осталось больше одного дня, вывод программы должен быть таким:
+
+До часа "Икс" 2 дня и 1 час
+Про минуты писать ничего не нужно, а если количество оставшихся часов — 0, то достаточно будет написать просто:
+
+До часа "Икс" 2 дня
+Для получения количества дней используйте свойство days объекта timedelta.
+
+Для того, чтобы получить минуты и часы, делите количество секунд, полученное с помощью seconds, целочисленно, то есть оператором //.
+
+И еще, чтобы все ваши расчеты сработали верно и не вылезло ничего лишнего, уберите лишние секунды и микросекунды из текущей даты с помощью метода replace даты/времени. Его описание можно найти в справочнике.
+
+
+МОЁ РЕШЕНИЕ
+import datetime
+
+
+def choose_plural(amount, variants):
+    if amount % 10 == 1 and amount % 100 != 11:
+        variant = 0
+    elif amount % 10 >= 2 and amount % 10 <= 4 and \
+            (amount % 100 < 10 or amount % 100 >= 20):
+        variant = 1
+    else:
+        variant = 2
+    return '{} {}'.format(amount, variants[variant])
+
+str_date = input('ДД.ММ.ГГГГ ЧЧ:ММ')
+#date_x = '15.12.2020 18:00'
+
+try:
+    date_x = datetime.datetime.strptime(str_date, '%d.%m.%Y %H:%M')
+    
+    now = datetime.datetime.now().replace(second=0, microsecond=0)
+
+    if date_x < now:
+        print("Ошибка")
+    else:
+        different = date_x - now
+        #print('осталось', different)
+        #print('осталось ', different.days,'дней')
+        diff_days = different.days
+        #print('осталось ', different.seconds // 3600,'часов')
+        diff_hours = different.seconds // 3600
+        #print('осталось ', (different.seconds // 60) % 60,'минут')
+        diff_mins = (different.seconds // 60) % 60
+        #print('осталось ', round(different.seconds - (diff_days*24*60*60) - (diff_hours*60*60) - (diff_mins*60)),'секунд')
+        diff_secs = round(different.seconds - (diff_days*24*60*60) - (diff_hours*60*60) - (diff_mins*60))
+    
+        if diff_days == 0 and diff_hours == 0 and diff_mins < 60: #Если осталось меньше часа
+            print('До часа \"Икс\"', choose_plural(diff_mins, ['минута', 'минуты', 'минут']))
+        elif diff_days == 0 and diff_hours >= 1:
+            if diff_mins == 0:
+                print('До часа \"Икс\"', choose_plural(diff_hours, ['час', 'часа', 'часов']))
+            print('До часа \"Икс\"', choose_plural(diff_hours, ['час', 'часа', 'часов']), 'и', choose_plural(diff_mins, ['минута', 'минуты', 'минут']))
+        elif diff_days >= 1:
+            print('До часа \"Икс\"', choose_plural(diff_days, ['день', 'дня', 'дней']), 'и', choose_plural(diff_hours, ['час', 'часа', 'часов']))
+
+except ValueError:
+    print("Ошибка")
+
+
+	
+	
+	
+	
+Наше решение
+	
+import datetime
+
+# Функция из урока "Выбор формы существительного"
+def choose_plural(amount, variants):
+    if amount % 10 == 1 and amount % 100 != 11:
+        variant = 0
+    elif amount % 10 >= 2 and amount % 10 <= 4 and \
+            (amount % 100 < 10 or amount % 100 >= 20):
+        variant = 1
+    else:
+        variant = 2
+    return '{} {}'.format(amount, variants[variant])
+
+try:
+    # Получаем и преобразуем нужные данные от пользователя
+    datetime_str = input('Введите дату и время часа X в формате ДД.ММ.ГГГГ ЧЧ:ММ')
+    date_x = datetime.datetime.strptime(datetime_str,'%d.%m.%Y %H:%M')
+    date_now = datetime.datetime.now().replace(second=0, microsecond=0)
+
+    # Программа должна начать выполнять эту часть кода 
+    # только если дата часа "Икс" больше текущей даты
+    if date_x > date_now:
+        delta = date_x - date_now
+        # Получаем количество дней, часов и минут, 
+        # оставшихся до часа "Икс"
+        days = delta.days
+        hours = delta.seconds // 3600
+        minutes = (delta.seconds - hours * 3600) // 60
+        result = ''
+        # Нужная строка формируется согласно условию задачи
+        if days > 0:
+            result = choose_plural(days, ('день', 'дня', 'дней'))
+            if hours > 0:
+                result += ' и ' + choose_plural(hours, (' час', 'часа', 'часов'))
+        elif hours > 0:
+            result = choose_plural(hours, ('час', 'часа', 'часов'))
+            if minutes > 0:
+                result += ' и ' + choose_plural(minutes, ('минута', 'минуты', 'минут'))
+        else:
+            result = choose_plural(minutes, ('минута', 'минуты', 'минут'))
+        print('До часа "Икс" ' + result)
+    else:
+        print('Ошибка')
+except ValueError:
+    # Если пользователь введет дату не по формату,
+    # отработает этот обработчик исключения
+    print('Ошибка')
